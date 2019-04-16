@@ -1,0 +1,3 @@
+rootProject.name = 'UpApps'
+
+include ':app'
