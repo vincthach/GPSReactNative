@@ -33,6 +33,8 @@ PODS:
     - Google-Maps-iOS-Utils (= 2.1.0)
     - GoogleMaps (= 2.5.0)
     - React
+  - react-native-location (2.2.0):
+    - React
   - react-native-maps (0.24.2):
     - React
   - React/Core (0.59.4):
@@ -97,6 +99,7 @@ DEPENDENCIES:
   - Google-Maps-iOS-Utils
   - GoogleMaps
   - react-native-google-maps (from `../node_modules/react-native-maps`)
+  - react-native-location (from `../node_modules/react-native-location/react-native-location.podspec`)
   - react-native-maps (from `../node_modules/react-native-maps`)
   - React/Core (from `../node_modules/react-native`)
   - React/CxxBridge (from `../node_modules/react-native`)
@@ -130,6 +133,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native"
   react-native-google-maps:
     :path: "../node_modules/react-native-maps"
+  react-native-location:
+    :path: "../node_modules/react-native-location/react-native-location.podspec"
   react-native-maps:
     :path: "../node_modules/react-native-maps"
   yoga:
@@ -144,9 +149,10 @@ SPEC CHECKSUMS:
   GoogleMaps: c087b8e5dfe87ca6ebf59adb9b4894a4146bec4f
   React: 1d605e098d69bdf08960787f3446f0a9dc2e2ccf
   react-native-google-maps: 77af0fa3b5325c72c107d054677911f6e6170496
+  react-native-location: 90a6222ffc78fbe6034557b7902c39f3d5b6fbd4
   react-native-maps: bb480348a3fe1e5a811fed1ba3387b329161c5cc
   yoga: 128daf064cacaede0c3bb27424b6b4c71052e6cd
 
-PODFILE CHECKSUM: 97153a1a4ce6861211d3518c174848d578aa1822
+PODFILE CHECKSUM: 96c500605e61e734a45f3fb47f5b81543b105ffa
 
 COCOAPODS: 1.5.3

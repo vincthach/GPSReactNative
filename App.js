@@ -22,6 +22,7 @@ import MapView, {
   PROVIDER_GOOGLE
 } from 'react-native-maps';
 import haversine from 'haversine';
+import RNLocation from 'react-native-location';
 
 // const LATITUDE = 29.95539;
 // const LONGITUDE = 78.07513;
@@ -29,7 +30,25 @@ const LATITUDE_DELTA = 0.009;
 const LONGITUDE_DELTA = 0.009;
 const LATITUDE = 37.78825;
 const LONGITUDE = -122.4324;
-
+RNLocation.configure({
+  distanceFilter: 5, // Meters
+  desiredAccuracy: {
+    ios: 'best',
+    android: 'highAccuracy'
+  },
+  // Android only
+  androidProvider: 'playServices',
+  interval: 5000, // Milliseconds
+  fastestInterval: 10000, // Milliseconds
+  maxWaitTime: 5000, // Milliseconds
+  // iOS Only
+  activityType: 'other',
+  allowsBackgroundLocationUpdates: true,
+  headingFilter: 1, // Degrees
+  headingOrientation: 'portrait',
+  pausesLocationUpdatesAutomatically: false,
+  showsBackgroundLocationIndicator: true,
+});
 export default class App extends React.Component {
   constructor(props) {
     super(props);
@@ -49,21 +68,119 @@ export default class App extends React.Component {
     };
   }
 
+
   componentDidMount() {
+    RNLocation.requestPermission({
+      ios: 'whenInUse',
+      android: {
+        detail: 'fine',
+        rationale: {
+          title: 'Location permission',
+          message: 'We use your location to demo the library',
+          buttonPositive: 'OK',
+          buttonNegative: 'Cancel'
+        }
+      }
+    }).then((granted) => {
+      if (granted) {
+        this.startUpdatingLocation();
+      }
+    });
+
+    // const { coordinate } = this.state;
+
+    // this.requestCameraPermission();
+
+    // this.watchID = navigator.geolocation.watchPosition(
+    //   (position) => {
+    //     const { routeCoordinates, distanceTravelled } = this.state;
+    //     const { latitude, longitude } = position.coords;
+
+    //     const newCoordinate = {
+    //       latitude,
+    //       longitude
+    //     };
+    //     console.log({ newCoordinate });
+
+    //     if (Platform.OS === 'android') {
+    //       if (this.marker) {
+    //         this.marker._component.animateMarkerToCoordinate(
+    //           newCoordinate,
+    //           500
+    //         );
+    //       }
+    //     } else {
+    //       coordinate.timing(newCoordinate).start();
+    //     }
+
+    //     this.setState({
+    //       latitude,
+    //       longitude,
+    //       routeCoordinates: routeCoordinates.concat([newCoordinate]),
+    //       distanceTravelled:
+    //         distanceTravelled + this.calcDistance(newCoordinate),
+    //       prevLatLng: newCoordinate
+    //     });
+    //   },
+    //   error => console.log(error),
+    //   {
+    //     enableHighAccuracy: true,
+    //     timeout: 20000,
+    //     maximumAge: 1000,
+    //     distanceFilter: 10
+    //   }
+    // );
+  }
+
+  componentWillUnmount() {
+    this.stopUpdatingLocation();
+    // navigator.geolocation.clearWatch(this.watchID);
+  }
+
+  getMapRegion = () => ({
+    latitude: this.state.latitude,
+    longitude: this.state.longitude,
+    latitudeDelta: LATITUDE_DELTA,
+    longitudeDelta: LONGITUDE_DELTA
+  });
+
+  calcDistance = (newLatLng) => {
+    const { prevLatLng } = this.state;
+    return haversine(prevLatLng, newLatLng) || 0;
+  };
+
+  // requestCameraPermission = async () => {
+  //   try {
+  //     const granted = await PermissionsAndroid.request(
+  //       PermissionsAndroid.PERMISSIONS.CAMERA,
+  //       {
+  //         title: 'Location Access Permission',
+  //         buttonNeutral: 'Ask Me Later',
+  //         buttonNegative: 'Cancel',
+  //         buttonPositive: 'OK'
+  //       }
+  //     );
+  //     if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+  //       console.log('You can use the camera');
+  //     } else {
+  //       console.log('Camera permission denied');
+  //     }
+  //   } catch (err) {
+  //     console.warn(err);
+  //   }
+  // };
+
+  startUpdatingLocation = () => {
     const { coordinate } = this.state;
-
-    this.requestCameraPermission();
-
-    this.watchID = navigator.geolocation.watchPosition(
-      (position) => {
+    this.locationSubscription = RNLocation.subscribeToLocationUpdates(
+      (locations) => {
         const { routeCoordinates, distanceTravelled } = this.state;
-        const { latitude, longitude } = position.coords;
+        const { latitude, longitude } = locations[0];
 
         const newCoordinate = {
           latitude,
           longitude
         };
-        console.log({ newCoordinate });
 
         if (Platform.OS === 'android') {
           if (this.marker) {
@@ -84,52 +201,13 @@ export default class App extends React.Component {
             distanceTravelled + this.calcDistance(newCoordinate),
           prevLatLng: newCoordinate
         });
-      },
-      error => console.log(error),
-      {
-        enableHighAccuracy: true,
-        timeout: 20000,
-        maximumAge: 1000,
-        distanceFilter: 10
       }
     );
-  }
-
-  componentWillUnmount() {
-    navigator.geolocation.clearWatch(this.watchID);
-  }
-
-  getMapRegion = () => ({
-    latitude: this.state.latitude,
-    longitude: this.state.longitude,
-    latitudeDelta: LATITUDE_DELTA,
-    longitudeDelta: LONGITUDE_DELTA
-  });
-
-  calcDistance = (newLatLng) => {
-    const { prevLatLng } = this.state;
-    return haversine(prevLatLng, newLatLng) || 0;
   };
 
-  requestCameraPermission = async () => {
-    try {
-      const granted = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.CAMERA,
-        {
-          title: 'Location Access Permission',
-          buttonNeutral: 'Ask Me Later',
-          buttonNegative: 'Cancel',
-          buttonPositive: 'OK'
-        }
-      );
-      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-        console.log('You can use the camera');
-      } else {
-        console.log('Camera permission denied');
-      }
-    } catch (err) {
-      console.warn(err);
-    }
+  stopUpdatingLocation = () => {
+    this.locationSubscription && this.locationSubscription();
+    this.setState({ location: null });
   };
 
   render() {
